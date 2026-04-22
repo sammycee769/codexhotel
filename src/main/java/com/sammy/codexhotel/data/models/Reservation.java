@@ -1,5 +1,6 @@
 package com.sammy.codexhotel.data.models;
 
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -18,7 +19,9 @@ public class Reservation {
     private String roomId;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
+    @Positive(message = "Number Of Nights must be positive")
     private int numberOfNights;
+    @Positive(message = "amount must be positive")
     private double totalPayment;
     private ReservationStatus reservationStatus = ReservationStatus.PENDING;
     private LocalDateTime createdAt = LocalDateTime.now();

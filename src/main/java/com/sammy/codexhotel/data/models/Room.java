@@ -1,6 +1,6 @@
 package com.sammy.codexhotel.data.models;
 
-import jakarta.validation.constraints.NotBlank;
+
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 public class Room {
     @Id
     private String roomId;
-    @NotBlank(message = "Amount is required")
     @Positive(message = "Amount must be greater than zero")
     private int roomNumber;
     @Positive(message = "Amount must be greater than zero")
