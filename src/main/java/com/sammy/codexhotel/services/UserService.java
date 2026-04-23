@@ -3,13 +3,12 @@ package com.sammy.codexhotel.services;
 import com.sammy.codexhotel.data.models.User;
 import com.sammy.codexhotel.data.repositories.UserRepo;
 import com.sammy.codexhotel.dtos.requests.RegisterUserRequest;
+import com.sammy.codexhotel.dtos.requests.UpdateUserRequest;
 import com.sammy.codexhotel.dtos.responses.RegisterUserResponse;
 import com.sammy.codexhotel.dtos.responses.UserResponse;
 import com.sammy.codexhotel.exceptions.UserAlreadyExistsException;
 import com.sammy.codexhotel.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,13 +22,12 @@ import static com.sammy.codexhotel.utils.Mappers.*;
 public class UserService {
 
     private final UserRepo userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public RegisterUserResponse registerUser(RegisterUserRequest registerUserRequest){
         validateUserDoesNotExist(registerUserRequest.getEmail());
         validateUserDoesNotExistByPhoneNumber(registerUserRequest.getPhoneNumber());
         User user = map(registerUserRequest);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(user.getPassword());
         userRepository.save(user);
         return map(registerUserRequest, user);
     }
@@ -49,14 +47,11 @@ public class UserService {
         return responses;
     }
 
-    public UserResponse updateUser(String userId, RegisterUserRequest request) {
+    public UserResponse updateUser(String userId, UpdateUserRequest request) {
         User existingUser = findUserById(userId);
         validateEmailUpdate(existingUser, request.getEmail());
         validatePhoneUpdate(existingUser, request.getPhoneNumber());
         mapUpdate(existingUser, request);
-        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
         userRepository.save(existingUser);
 
         return mapToUser(existingUser);
@@ -91,7 +86,7 @@ public class UserService {
     }
 
     private void validateUserDoesNotExistByPhoneNumber(String phoneNumber){
-        Optional<User> existingUser = userRepository.findByPhone(phoneNumber);
+        Optional<User> existingUser = userRepository.findByPhoneNumber(phoneNumber);
         if(existingUser !=null && existingUser.isPresent()){
             throw new UserAlreadyExistsException(phoneNumber + " is already registered");
         }

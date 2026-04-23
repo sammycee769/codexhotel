@@ -7,23 +7,21 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
+
 
 @Data
 @Document(collection = "users")
-public class User implements UserDetails {
+public class User  {
     @Id
     private String userId;
     @NotBlank(message = "Username is required")
     private String name;
     @NotBlank(message = "Email is required")
     @Email(message = "invalid email address")
+    @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
     private String email;
     @NotBlank(message ="Password is required")
     private String password;
@@ -33,24 +31,4 @@ public class User implements UserDetails {
     private LocalDateTime createdAt = LocalDateTime.now();
     @LastModifiedDate
     private LocalDateTime updatedAt;
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities(){
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
-    }
-    @Override
-    public String getUsername(){
-        return email;
-    }
-    @Override
-    public boolean isAccountNonExpired(){
-        return true;
-    }
-    @Override
-    public boolean isAccountNonLocked() { return true; }
-
-    @Override
-    public boolean isCredentialsNonExpired() { return true; }
-
-    @Override
-    public boolean isEnabled() { return true; }
 }

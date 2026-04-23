@@ -26,6 +26,7 @@ public class Report {
     private int totalRoomsAvailable;
     @Positive(message = "Total Revenue must be greater than zero")
     private double totalRevenue;
+    private int roomsUnderMaintainance;
     private LocalDateTime generatedAt = LocalDateTime.now();
     private double occupancyRate = (double) totalRoomsOccupied / totalRoomsAvailable;
 

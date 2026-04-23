@@ -7,6 +7,7 @@ import com.sammy.codexhotel.data.models.User;
 import com.sammy.codexhotel.dtos.requests.AddRoomRequest;
 import com.sammy.codexhotel.dtos.requests.PaymentRequest;
 import com.sammy.codexhotel.dtos.requests.RegisterUserRequest;
+import com.sammy.codexhotel.dtos.requests.UpdateUserRequest;
 import com.sammy.codexhotel.dtos.responses.*;
 
 public class Mappers {
@@ -40,7 +41,7 @@ public class Mappers {
         return userResponse;
     }
 
-    public static void mapUpdate(User existingUser, RegisterUserRequest request) {
+    public static void mapUpdate(User existingUser, UpdateUserRequest request) {
         existingUser.setName(request.getName());
         existingUser.setEmail(request.getEmail());
         existingUser.setPhoneNumber(request.getPhoneNumber());

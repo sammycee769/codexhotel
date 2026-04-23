@@ -1,9 +1,6 @@
 package com.sammy.codexhotel.services;
 
-import com.sammy.codexhotel.data.models.Report;
-import com.sammy.codexhotel.data.models.Reservation;
-import com.sammy.codexhotel.data.models.ReservationStatus;
-import com.sammy.codexhotel.data.models.RoomStatus;
+import com.sammy.codexhotel.data.models.*;
 import com.sammy.codexhotel.data.repositories.ReportRepo;
 import com.sammy.codexhotel.data.repositories.ReservationRepo;
 import com.sammy.codexhotel.data.repositories.RoomRepo;
@@ -41,5 +38,21 @@ public class ReportService {
         int occupied = roomRepository.findByRoomStatus(RoomStatus.OCCUPIED).size();
         int available = roomRepository.findByRoomStatus(RoomStatus.AVAILABLE).size();
         int maintenance = roomRepository.findByRoomStatus(RoomStatus.MAINTENANCE).size();
+
+        Report report = new Report();
+        report.setReportType(request.getReportType());
+        report.setStartDate(request.getStartDate());
+        report.setEndDate(request.getEndDate());
+        report.setTotalRevenue(totalRevenue);
+        report.setTotalRoomsOccupied(occupied);
+        report.setTotalRoomsAvailable(available);
+        report.setRoomsUnderMaintainance(maintenance);
+        return reportRepository.save(report);
+    }
+    public List<Report> getReportByType(ReportType reportType){
+        return reportRepository.findByReportType(reportType);
+    }
+    public List<Report> getAllReports(){
+        return reportRepository.findAll();
     }
 }
