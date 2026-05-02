@@ -1,9 +1,7 @@
 package com.sammy.codexhotel.controllers;
 
-import com.sammy.codexhotel.dtos.requests.RegisterUserRequest;
 import com.sammy.codexhotel.dtos.requests.UpdateUserRequest;
 import com.sammy.codexhotel.dtos.responses.ApiResponse;
-import com.sammy.codexhotel.dtos.responses.RegisterUserResponse;
 import com.sammy.codexhotel.dtos.responses.UserResponse;
 import com.sammy.codexhotel.exceptions.UserAlreadyExistsException;
 import com.sammy.codexhotel.exceptions.UserNotFoundException;

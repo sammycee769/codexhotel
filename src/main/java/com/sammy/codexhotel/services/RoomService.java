@@ -5,7 +5,10 @@ import com.sammy.codexhotel.data.models.RoomStatus;
 import com.sammy.codexhotel.data.models.RoomType;
 import com.sammy.codexhotel.data.repositories.RoomRepo;
 import com.sammy.codexhotel.dtos.requests.AddRoomRequest;
+import com.sammy.codexhotel.dtos.requests.UpdateRoomRequest;
 import com.sammy.codexhotel.dtos.responses.RoomResponse;
+import com.sammy.codexhotel.exceptions.RoomAlreadyExistsException;
+import com.sammy.codexhotel.exceptions.RoomNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +30,22 @@ public class RoomService {
         return map(room);
     }
 
+    public RoomResponse updateRoom(UpdateRoomRequest roomRequest, String roomId){
+        Room room = getRoomEntityById(roomId);
+        if (roomRequest.getRoomNumber() != null) {
+            validateRoomNumberForUpdate(roomRequest.getRoomNumber(), roomId);
+            room.setRoomNumber(roomRequest.getRoomNumber());
+        }
+        if (roomRequest.getRoomType() != null){
+            room.setRoomType(roomRequest.getRoomType());
+        }
+        if (roomRequest.getPricePerNight() != null){
+            room.setPricePerNight(roomRequest.getPricePerNight());
+        }
+        roomRepository.save(room);
+        return map(room);
+    }
+
     public List<RoomResponse> getRooms(){
         List<Room> rooms = roomRepository.findAll();
         List<RoomResponse> responses = new ArrayList<>();
@@ -35,6 +54,11 @@ public class RoomService {
             responses.add(map(room));
         }
         return responses;
+    }
+
+    public void deleteRoom(String roomId) {
+        Room room = getRoomEntityById(roomId);
+        roomRepository.delete(room);
     }
 
     public List<RoomResponse> getAllAvailableRooms(){
@@ -48,7 +72,7 @@ public class RoomService {
     }
 
     public List<RoomResponse> getAvailableRoomsByType(RoomType type){
-        List<Room> rooms = roomRepository.findByRoomTypeAndRoomStatus(RoomStatus.AVAILABLE, type);
+        List<Room> rooms = roomRepository.findByRoomTypeAndRoomStatus(type,RoomStatus.AVAILABLE);
         List<RoomResponse> responses = new ArrayList<>();
         for (Room room : rooms) {
             responses.add(map(room));
@@ -71,12 +95,12 @@ public class RoomService {
 
     Room getRoomEntityById(String roomId) {
         return roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found with id: " + roomId));
+                .orElseThrow(() -> new RoomNotFoundException("Room not found with id: " + roomId));
     }
 
     private void validateIfRoomExists(AddRoomRequest request) {
         if (roomRepository.findByRoomNumber(request.getRoomNumber()).isPresent()) {
-            throw new RuntimeException("Room number already exists");
+            throw new RoomAlreadyExistsException("Room number already exists");
         }
     }
     private RoomResponse updateStatus(String roomId, RoomStatus status) {
@@ -84,5 +108,14 @@ public class RoomService {
         room.setRoomStatus(status);
         roomRepository.save(room);
         return map(room);
+    }
+    private void validateRoomNumberForUpdate(Integer roomNumber, String roomId) {
+        Room existingRoom = roomRepository.findByRoomNumber(roomNumber).orElse(null);
+
+        if (existingRoom != null) {
+            if (!existingRoom.getRoomId().equals(roomId)) {
+                throw new RoomAlreadyExistsException("Room number already exists");
+            }
+        }
     }
 }
