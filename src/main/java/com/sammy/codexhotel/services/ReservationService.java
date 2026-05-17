@@ -10,6 +10,7 @@ import com.sammy.codexhotel.dtos.responses.BookingResponse;
 import com.sammy.codexhotel.dtos.responses.RoomResponse;
 import com.sammy.codexhotel.exceptions.CannotCancelReservationException;
 import com.sammy.codexhotel.exceptions.ReservationAlreadyCancelledException;
+import com.sammy.codexhotel.exceptions.ReservationNotFound;
 import com.sammy.codexhotel.exceptions.RoomNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -70,7 +71,7 @@ public class ReservationService {
         Reservation saved = reservationRepository.save(reservation);
         User user = userService.findUserById(saved.getUserId());
         Room room = roomService.getRoomEntityById(saved.getRoomId());
-
+        notificationService.sendCancellationNotification(user, saved);
         return map(user, room, reservation);
     }
 
@@ -137,7 +138,7 @@ public class ReservationService {
 
     private Reservation findReservationById(String reservationId) {
         return reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+                .orElseThrow(() -> new ReservationNotFound("Reservation not found with id: " + reservationId));
     }
 
     private static void validateRoomIsAvailable(BookingRequest request, List<Room> availableRooms) {

@@ -8,6 +8,8 @@ import com.sammy.codexhotel.services.RoomService;
 import com.sammy.codexhotel.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -49,5 +51,10 @@ public class ReservationScheduler {
             notificationService.sendCheckInReminder(userService.findUserById(reservation.getUserId()), reservation);
             log.info("Reminder sent for reservation: {}", reservation.getBookingReference());
         }
+    }
+    @EventListener(ApplicationReadyEvent.class)
+    public void runOnStartup() {
+        log.info("Running missed reservation checks on startup...");
+        autoCompleteExpiredReservations();
     }
 }
