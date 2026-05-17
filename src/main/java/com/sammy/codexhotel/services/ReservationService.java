@@ -48,11 +48,11 @@ public class ReservationService {
         reservation.setUserId(user.getUserId());
         reservation.setRoomId(room.getRoomId());
         reservation.setCheckInDate(request.getCheckInDate());
-        reservation.setCheckInDate(request.getCheckInDate().plusDays(request.getNumberOfNights()));
+        reservation.setCheckOutDate(request.getCheckInDate().plusDays(request.getNumberOfNights()));
         reservation.setNumberOfNights(request.getNumberOfNights());
         reservation.setTotalPayment(total);
         reservation.setBookingReference("RESERVE"+ UUID.randomUUID().toString().substring(0,6).toUpperCase());
-        reservation.setReservationStatus(ReservationStatus.COMPLETED);
+        reservation.setReservationStatus(ReservationStatus.CONFIRMED);
 
         roomService.markAsOccupied(room.getRoomId());
         Reservation saved = reservationRepository.save(reservation);

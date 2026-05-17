@@ -10,7 +10,7 @@ import static com.sammy.codexhotel.utils.Mappers.map;
 
 @Service
 public class PricingService {
-    private static final double FESTIVE_SURCHARGE = 0.50;
+    private static final double FESTIVE_SURCHARGE = 0.20;
 
     public double getPrices(RoomType roomType){
         return switch (roomType){
@@ -24,7 +24,7 @@ public class PricingService {
         double basePrice = getPrices(roomType);
         double subTotal = basePrice * numberOfNights;
         if(isFestiveSeason){
-           return subTotal + (1 + FESTIVE_SURCHARGE);
+           return subTotal * (1 + FESTIVE_SURCHARGE);
         }else
             return subTotal;
     }

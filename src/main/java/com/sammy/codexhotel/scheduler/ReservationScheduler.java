@@ -25,7 +25,7 @@ public class ReservationScheduler {
     private final NotificationService notificationService;
     private final UserService userService;
 
-    @Scheduled(cron = " 0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void autoCompleteExpiredReservations(){
         log.info("Running reservation checkout scheduler...");
 

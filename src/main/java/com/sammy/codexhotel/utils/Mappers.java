@@ -77,14 +77,14 @@ public class Mappers {
         bookingResponse.setBookingReference(reservation.getBookingReference());
         bookingResponse.setGuestName(user.getName());
         bookingResponse.setEmail(user.getEmail());
-        bookingResponse.setEmail(user.getEmail());
+
         bookingResponse.setPhoneNumber(user.getPhoneNumber());
         bookingResponse.setRoomNumber(room.getRoomNumber());
         bookingResponse.setRoomType(room.getRoomType());
         bookingResponse.setPricePerNight(room.getPricePerNight());
         bookingResponse.setTotalPayment(reservation.getTotalPayment());
         bookingResponse.setCheckInDate(reservation.getCheckInDate());
-        bookingResponse.setCheckOutDate(reservation.getCheckInDate());
+        bookingResponse.setCheckOutDate(reservation.getCheckOutDate());
         bookingResponse.setStatus(reservation.getReservationStatus().toString());
         return bookingResponse;
     }
