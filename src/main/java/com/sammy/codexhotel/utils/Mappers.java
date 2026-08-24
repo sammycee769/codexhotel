@@ -4,6 +4,7 @@ import com.sammy.codexhotel.data.models.Reservation;
 import com.sammy.codexhotel.data.models.Room;
 import com.sammy.codexhotel.data.models.RoomStatus;
 import com.sammy.codexhotel.data.models.User;
+import com.sammy.codexhotel.data.models.UserRole;
 import com.sammy.codexhotel.dtos.requests.AddRoomRequest;
 import com.sammy.codexhotel.dtos.requests.PaymentRequest;
 import com.sammy.codexhotel.dtos.requests.RegisterUserRequest;
@@ -17,7 +18,7 @@ public class Mappers {
         user.setEmail(registerUserRequest.getEmail());
         user.setName(registerUserRequest.getName());
         user.setPhoneNumber(registerUserRequest.getPhoneNumber());
-        user.setRole(registerUserRequest.getRole());
+        user.setRole(UserRole.GUEST);
         return user;
     }
 
@@ -25,7 +26,7 @@ public class Mappers {
         RegisterUserResponse registerUserResponse = new RegisterUserResponse();
         registerUserResponse.setEmail(registerUserRequest.getEmail());
         registerUserResponse.setName(registerUserRequest.getName());
-        registerUserResponse.setRole(registerUserRequest.getRole());
+        registerUserResponse.setRole(user.getRole());
         registerUserResponse.setUserId(user.getUserId());
         registerUserResponse.setPhoneNumber(registerUserRequest.getPhoneNumber());
         return registerUserResponse;
@@ -41,16 +42,39 @@ public class Mappers {
         return userResponse;
     }
 
+    /**
+     * PATCH semantics: only overwrite fields the caller actually sent. Assigning
+     * unconditionally would null out any field omitted from the request body.
+     */
     public static void mapUpdate(User existingUser, UpdateUserRequest request) {
-        existingUser.setName(request.getName());
-        existingUser.setEmail(request.getEmail());
-        existingUser.setPhoneNumber(request.getPhoneNumber());
+        if (request.getName() != null) {
+            existingUser.setName(request.getName());
+        }
+        if (request.getEmail() != null) {
+            existingUser.setEmail(request.getEmail());
+        }
+        if (request.getPhoneNumber() != null) {
+            existingUser.setPhoneNumber(request.getPhoneNumber());
+        }
+    }
+
+    public static LoginResponse map(User user, String token, long expiresInMs) {
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(token);
+        loginResponse.setUserId(user.getUserId());
+        loginResponse.setName(user.getName());
+        loginResponse.setEmail(user.getEmail());
+        loginResponse.setPhoneNumber(user.getPhoneNumber());
+        loginResponse.setRole(user.getRole());
+        loginResponse.setExpiresInMs(expiresInMs);
+        return loginResponse;
     }
 
     public static PaymentResponse map(PaymentRequest paymentRequest, double basePrice, double total, double surchargeAmount) {
         PaymentResponse paymentResponse = new PaymentResponse();
         paymentResponse.setRoomType(paymentRequest.getRoomType().name());
         paymentResponse.setNumberOfNights(paymentRequest.getNumberOfNights());
+        paymentResponse.setFestivePeriod(paymentRequest.isFestivePeriod());
         paymentResponse.setPricePerNight(basePrice);
         paymentResponse.setTotalPayment(total);
         paymentResponse.setSurchargeAmount(surchargeAmount);
@@ -74,6 +98,7 @@ public class Mappers {
 
     public static BookingResponse map( User user, Room room, Reservation reservation) {
         BookingResponse bookingResponse = new BookingResponse();
+        bookingResponse.setReservationId(reservation.getReservationId());
         bookingResponse.setBookingReference(reservation.getBookingReference());
         bookingResponse.setGuestName(user.getName());
         bookingResponse.setEmail(user.getEmail());

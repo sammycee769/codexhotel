@@ -28,6 +28,13 @@ public class Report {
     private double totalRevenue;
     private int roomsUnderMaintainance;
     private LocalDateTime generatedAt = LocalDateTime.now();
-    private double occupancyRate = (double) totalRoomsOccupied / totalRoomsAvailable;
+
+    /**
+     * Occupied rooms as a fraction of the whole inventory, computed in ReportService once the
+     * counts are known. It must not be initialised here: a field initialiser runs while both
+     * counts are still 0, so `occupied / available` evaluates to 0.0/0 = NaN — and Jackson
+     * serialises that as bare NaN, which is invalid JSON and breaks any client parsing it.
+     */
+    private double occupancyRate;
 
 }

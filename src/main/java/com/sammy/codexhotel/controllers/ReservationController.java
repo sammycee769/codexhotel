@@ -5,11 +5,14 @@ import com.sammy.codexhotel.dtos.requests.BookingRequest;
 import com.sammy.codexhotel.dtos.responses.ApiResponse;
 import com.sammy.codexhotel.dtos.responses.BookingResponse;
 import com.sammy.codexhotel.exceptions.*;
+import com.sammy.codexhotel.security.CustomUserDetails;
 import com.sammy.codexhotel.services.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +24,7 @@ public class ReservationController {
     private final ReservationService reservationService;
 
     @PostMapping("/book")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST') or principal.userId == #bookingRequest.userId")
     public ResponseEntity<ApiResponse> bookRoom(@Valid @RequestBody BookingRequest bookingRequest) {
         try {
             BookingResponse bookingResponse = reservationService.bookRoom(bookingRequest);
@@ -35,9 +39,11 @@ public class ReservationController {
     }
 
     @PatchMapping("/cancel/{reservationId}")
-    public ResponseEntity<ApiResponse> cancelReservation(@PathVariable String reservationId) {
+    public ResponseEntity<ApiResponse> cancelReservation(@PathVariable String reservationId,
+                                                        @AuthenticationPrincipal CustomUserDetails principal) {
         try {
-            BookingResponse bookingResponse = reservationService.cancelReservation(reservationId);
+            BookingResponse bookingResponse = reservationService.cancelReservation(
+                    reservationId, principal.getUserId(), principal.isStaff());
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(new ApiResponse(true,"Room cancelled successfully",bookingResponse));
@@ -64,6 +70,7 @@ public class ReservationController {
     }
 
     @GetMapping("/my/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST') or principal.userId == #userId")
     public ResponseEntity<ApiResponse> getUserReservations(@PathVariable String userId) {
         try {
             List<BookingResponse> bookingResponse = reservationService.getUserReservations(userId);

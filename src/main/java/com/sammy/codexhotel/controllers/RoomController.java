@@ -5,6 +5,7 @@ import com.sammy.codexhotel.dtos.requests.AddRoomRequest;
 import com.sammy.codexhotel.dtos.requests.UpdateRoomRequest;
 import com.sammy.codexhotel.dtos.requests.UpdateUserRequest;
 import com.sammy.codexhotel.dtos.responses.ApiResponse;
+import com.sammy.codexhotel.dtos.responses.RoomNumberingResponse;
 import com.sammy.codexhotel.dtos.responses.RoomResponse;
 import com.sammy.codexhotel.exceptions.RoomAlreadyExistsException;
 import com.sammy.codexhotel.exceptions.RoomNotFoundException;
@@ -45,6 +46,19 @@ public class RoomController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new ApiResponse(true, "Rooms available", rooms));
+    }
+
+    /**
+     * Numbering guidance for one category — the next free number and the band it belongs to — so the
+     * admin room form can prefill and hint instead of letting staff guess and be rejected by
+     * RoomNumbering.validate on save.
+     */
+    @GetMapping("/next-number/{roomType}")
+    public ResponseEntity<ApiResponse> getNextRoomNumber(@PathVariable RoomType roomType){
+        RoomNumberingResponse numbering = roomService.numberingFor(roomType);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ApiResponse(true, "Next room number", numbering));
     }
 
     @PostMapping("/add")

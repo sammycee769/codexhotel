@@ -1,9 +1,9 @@
 package com.sammy.codexhotel.dtos.requests;
 
-import com.sammy.codexhotel.data.models.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -18,11 +18,13 @@ public class RegisterUserRequest {
     private String email;
 
     @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 
     @Pattern(regexp = "^(\\+234|0)(70|8[01]|9[01])[0-9]{8}$",
             message = "Invalid Nigerian phone number")
     private String phoneNumber;
 
-    private UserRole role;
+    // No role field by design: self-registration always yields a GUEST. Staff accounts are
+    // seeded (see AdminSeeder) or promoted by an admin, so role cannot be injected here.
 }

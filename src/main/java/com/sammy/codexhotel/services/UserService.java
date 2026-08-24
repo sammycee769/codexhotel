@@ -1,14 +1,22 @@
 package com.sammy.codexhotel.services;
 
 import com.sammy.codexhotel.data.models.User;
+import com.sammy.codexhotel.data.models.UserRole;
 import com.sammy.codexhotel.data.repositories.UserRepo;
+import com.sammy.codexhotel.dtos.requests.LoginRequest;
 import com.sammy.codexhotel.dtos.requests.RegisterUserRequest;
 import com.sammy.codexhotel.dtos.requests.UpdateUserRequest;
+import com.sammy.codexhotel.dtos.responses.LoginResponse;
 import com.sammy.codexhotel.dtos.responses.RegisterUserResponse;
 import com.sammy.codexhotel.dtos.responses.UserResponse;
+import com.sammy.codexhotel.exceptions.CannotChangeRoleException;
 import com.sammy.codexhotel.exceptions.UserAlreadyExistsException;
 import com.sammy.codexhotel.exceptions.UserNotFoundException;
+import com.sammy.codexhotel.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,14 +30,31 @@ import static com.sammy.codexhotel.utils.Mappers.*;
 public class UserService {
 
     private final UserRepo userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     public RegisterUserResponse registerUser(RegisterUserRequest registerUserRequest){
         validateUserDoesNotExist(registerUserRequest.getEmail());
         validateUserDoesNotExistByPhoneNumber(registerUserRequest.getPhoneNumber());
         User user = map(registerUserRequest);
-        user.setPassword(user.getPassword());
+        user.setPassword(passwordEncoder.encode(registerUserRequest.getPassword()));
         userRepository.save(user);
         return map(registerUserRequest, user);
+    }
+
+    /**
+     * Delegates credential checking to the AuthenticationManager, then issues a JWT.
+     * A bad password surfaces as BadCredentialsException for the controller to map to 401.
+     */
+    public LoginResponse login(LoginRequest loginRequest){
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                loginRequest.getEmail(), loginRequest.getPassword()));
+
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("user not found"));
+
+        return map(user, jwtService.generateToken(user), jwtService.getExpirationMs());
     }
 
     public UserResponse getUserById(String userId){
@@ -57,6 +82,21 @@ public class UserService {
         return mapToUser(existingUser);
     }
 
+    /**
+     * Assigns a role to a user. ADMIN-only at the controller. An admin cannot change their own
+     * role: it would let them demote themselves out of the console mid-session, and if they were
+     * the only admin it would leave the system with no way to promote anyone ever again.
+     */
+    public UserResponse changeRole(String actingUserId, String targetUserId, UserRole newRole) {
+        if (actingUserId.equals(targetUserId)) {
+            throw new CannotChangeRoleException("You cannot change your own role");
+        }
+        User target = findUserById(targetUserId);
+        target.setRole(newRole);
+        userRepository.save(target);
+        return mapToUser(target);
+    }
+
     public void deleteUser(String userId) {
         User user = findUserById(userId);
         userRepository.delete(user);
@@ -64,13 +104,13 @@ public class UserService {
 
 
     private void validateEmailUpdate(User existingUser, String newEmail) {
-        if (!existingUser.getEmail().equals(newEmail)) {
+        if (newEmail != null && !existingUser.getEmail().equals(newEmail)) {
             validateUserDoesNotExist(newEmail);
         }
     }
 
     private void validatePhoneUpdate(User existingUser, String newPhone) {
-        if (!existingUser.getPhoneNumber().equals(newPhone)) {
+        if (newPhone != null && !newPhone.equals(existingUser.getPhoneNumber())) {
             validateUserDoesNotExistByPhoneNumber(newPhone);
         }
     }

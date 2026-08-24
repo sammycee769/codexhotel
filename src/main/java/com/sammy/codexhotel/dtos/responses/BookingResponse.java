@@ -6,6 +6,9 @@ import lombok.Data;
 import java.time.LocalDate;
 @Data
 public class BookingResponse {
+    // The cancel and complete endpoints are keyed on reservationId, so it has to travel with the
+    // response — the human-facing bookingReference cannot address those routes.
+    private String reservationId;
     private String bookingReference;
     private String guestName;
     private String email;

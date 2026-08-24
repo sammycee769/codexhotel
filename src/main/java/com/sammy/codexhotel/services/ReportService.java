@@ -47,8 +47,22 @@ public class ReportService {
         report.setTotalRoomsOccupied(occupied);
         report.setTotalRoomsAvailable(available);
         report.setRoomsUnderMaintainance(maintenance);
+        report.setOccupancyRate(occupancyRate(occupied, available, maintenance));
         return reportRepository.save(report);
     }
+    /**
+     * Occupied rooms over the whole inventory, so the value is always between 0 and 1.
+     * Guards the empty-hotel case, which would otherwise divide by zero and yield NaN —
+     * unserialisable as JSON.
+     */
+    private double occupancyRate(int occupied, int available, int maintenance) {
+        int totalRooms = occupied + available + maintenance;
+        if (totalRooms == 0) {
+            return 0.0;
+        }
+        return (double) occupied / totalRooms;
+    }
+
     public List<Report> getReportByType(ReportType reportType){
         return reportRepository.findByReportType(reportType);
     }

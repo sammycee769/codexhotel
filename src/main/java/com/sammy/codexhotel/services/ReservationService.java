@@ -13,6 +13,7 @@ import com.sammy.codexhotel.exceptions.ReservationAlreadyCancelledException;
 import com.sammy.codexhotel.exceptions.ReservationNotFound;
 import com.sammy.codexhotel.exceptions.RoomNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -58,11 +59,20 @@ public class ReservationService {
         Reservation saved = reservationRepository.save(reservation);
         notificationService.sendBookingConfirmation(user,saved,room);
 
-        return map(user, room, reservation);
+        // Map the saved copy: the generated reservationId only exists after the insert.
+        return map(user, room, saved);
     }
 
-    public BookingResponse cancelReservation(String reservationId){
+    /**
+     * The reservation owner is not in the URL, so ownership can't be enforced with @PreAuthorize
+     * on a path variable — it is checked here against the stored reservation instead. Staff
+     * cancel on a guest's behalf, so they bypass the check.
+     */
+    public BookingResponse cancelReservation(String reservationId, String requesterId, boolean requesterIsStaff){
         Reservation reservation = findReservationById(reservationId);
+        if (!requesterIsStaff && !reservation.getUserId().equals(requesterId)) {
+            throw new AccessDeniedException("You can only cancel your own reservations");
+        }
         checkReservationStatus(reservation);
         checkIfReservationisComplete(reservation);
         reservation.setReservationStatus(ReservationStatus.CANCELLED);
