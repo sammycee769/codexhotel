@@ -74,8 +74,8 @@ EXPOSE 8080
 # start-period is generous and start-interval probes inside it every few seconds: cold starts on a
 # loaded machine have been seen to take three minutes, and without this the container is reported
 # unhealthy on the way up — enough to fail a `depends_on: condition: service_healthy`.
-HEALTHCHECK --start-period=240s --start-interval=5s --interval=30s --timeout=5s --retries=3 \
-    CMD curl -fsS http://localhost:8080/api/rooms/available > /dev/null || exit 1
+#HEALTHCHECK --start-period=240s --start-interval=5s --interval=30s --timeout=5s --retries=3 \
+#    CMD curl -fsS http://localhost:8080/api/rooms/available > /dev/null || exit 1
 
 # MaxRAMPercentage because the JVM's default quarter-of-the-container is wasteful when the
 # container limit *is* the app's budget; ExitOnOutOfMemoryError so an exhausted heap becomes a
