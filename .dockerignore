@@ -1,0 +1,31 @@
+# The build only needs the wrapper, the POM and src/ — everything else either bloats the context
+# or, worse, gets baked in stale. target/ alone is ~100MB once the uber jar is in it.
+target/
+!.mvn/wrapper/maven-wrapper.properties
+
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# IDE and editor state
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+
+# Docker's own files: changing a comment here should not invalidate the build context.
+Dockerfile
+.dockerignore
+docker-compose*.yml
+docker-compose*.yaml
+
+HELP.md
+*.md
+
+# Local logs and scratch output
+*.log
